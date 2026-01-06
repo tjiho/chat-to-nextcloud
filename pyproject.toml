@@ -10,6 +10,7 @@ dependencies = [
     "aiofiles>=24.0.0",
     "aiohttp>=3.9.0",
     "python-telegram-bot>=21.0",
+    "signalbot>=0.21.0",
 ]
 
 [project.optional-dependencies]

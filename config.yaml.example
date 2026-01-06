@@ -19,3 +19,8 @@ adapters:
   telegram:
     enabled: true
     bot_token: "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"  # Get from @BotFather
+
+  signal:
+    enabled: false
+    signal_service: "127.0.0.1:8080"  # signal-cli-rest-api URL
+    phone_number: "+33612345678"  # Phone number linked to Signal

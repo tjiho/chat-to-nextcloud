@@ -6,12 +6,12 @@
 
 # Chat to Nextcloud
 
-Automatically upload files from messaging apps to Nextcloud. Supports **Telegram** and **Matrix**.
+Automatically upload files from messaging apps to Nextcloud. Supports **Telegram**, **Signal**, and **Matrix**.
 
 ## Features
 
 - Auto-uploads files shared in chats to Nextcloud
-- Supports Telegram and Matrix
+- Supports Telegram, Signal, and Matrix
 - Configurable folder structure with templates
 - Optional end-to-end encryption for Matrix
 - Dry-run mode for testing
@@ -57,6 +57,11 @@ adapters:
     enabled: true
     bot_token: "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
 
+  signal:
+    enabled: false
+    signal_service: "127.0.0.1:8080"
+    phone_number: "+33612345678"
+
   matrix:
     enabled: false
     homeserver: "https://matrix.org"
@@ -88,6 +93,45 @@ adapters:
    - Send `/setprivacy` to @BotFather
    - Select your bot
    - Choose "Disable"
+
+### Signal Setup
+
+Signal requires [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) as a backend.
+
+1. Run signal-cli-rest-api with Docker:
+   ```bash
+   docker run -d --name signal-api \
+     -p 8080:8080 \
+     -v $HOME/.local/share/signal-cli:/home/.local/share/signal-cli \
+     -e MODE=normal \
+     bbernhard/signal-cli-rest-api
+   ```
+
+2. Link your phone number (first time only):
+   ```bash
+   # Open the QR code link page
+   curl "http://127.0.0.1:8080/v1/qrcodelink?device_name=chat-to-nextcloud"
+   ```
+   Scan the QR code with your Signal app (Settings > Linked Devices).
+
+3. Restart in JSON-RPC mode:
+   ```bash
+   docker stop signal-api
+   docker run -d --name signal-api \
+     -p 8080:8080 \
+     -v $HOME/.local/share/signal-cli:/home/.local/share/signal-cli \
+     -e MODE=json-rpc \
+     bbernhard/signal-cli-rest-api
+   ```
+
+4. Update your `config.yaml`:
+   ```yaml
+   adapters:
+     signal:
+       enabled: true
+       signal_service: "127.0.0.1:8080"
+       phone_number: "+33612345678"  # Your linked phone number
+   ```
 
 ### Getting a Matrix Access Token
 
@@ -182,7 +226,7 @@ Press `Ctrl+C` for graceful shutdown.
 
 ## How It Works
 
-1. Bot connects to enabled platforms (Telegram/Matrix)
+1. Bot connects to enabled platforms (Telegram/Signal/Matrix)
 2. When someone shares a file, the bot:
    - Downloads the file
    - Resolves the path template
@@ -211,6 +255,7 @@ chat-to-nextcloud/
 │   └── adapters/
 │       ├── base.py      # Adapter interface
 │       ├── telegram.py  # Telegram implementation
+│       ├── signal.py    # Signal implementation
 │       └── matrix.py    # Matrix implementation
 └── tests/               # Unit tests
 ```

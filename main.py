@@ -7,6 +7,7 @@ from pathlib import Path
 
 from src.adapters.base import BaseAdapter
 from src.adapters.matrix import MatrixAdapter, MatrixAuthError
+from src.adapters.signal import SignalAdapter
 from src.adapters.telegram import TelegramAdapter
 from src.config import Config
 from src.file_processor import FileProcessor
@@ -97,6 +98,9 @@ async def main() -> None:
 
     if config.adapters.telegram:
         adapters.append(TelegramAdapter(config.adapters.telegram))
+
+    if config.adapters.signal:
+        adapters.append(SignalAdapter(config.adapters.signal))
 
     if not adapters:
         logger.error("No adapters enabled in configuration")

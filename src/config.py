@@ -29,9 +29,17 @@ class TelegramConfig:
 
 
 @dataclass
+class SignalConfig:
+    enabled: bool
+    signal_service: str  # URL of signal-cli-rest-api (e.g., "127.0.0.1:8080")
+    phone_number: str  # Phone number linked to Signal (e.g., "+33612345678")
+
+
+@dataclass
 class AdaptersConfig:
     matrix: MatrixConfig | None = None
     telegram: TelegramConfig | None = None
+    signal: SignalConfig | None = None
 
 
 @dataclass
@@ -70,7 +78,16 @@ class Config:
                 bot_token=telegram_data["bot_token"],
             )
 
-        adapters = AdaptersConfig(matrix=matrix, telegram=telegram)
+        signal_data = adapters_data.get("signal")
+        signal = None
+        if signal_data and signal_data.get("enabled", False):
+            signal = SignalConfig(
+                enabled=True,
+                signal_service=signal_data["signal_service"],
+                phone_number=signal_data["phone_number"],
+            )
+
+        adapters = AdaptersConfig(matrix=matrix, telegram=telegram, signal=signal)
 
         return cls(
             nextcloud=nextcloud,
