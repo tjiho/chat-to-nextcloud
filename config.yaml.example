@@ -1,0 +1,21 @@
+nextcloud:
+  url: "https://nextcloud.example.com"
+  username: "user"
+  password: "app-password"  # Use app password, not main password
+  base_path: "/Photos/ChatUploads"
+
+# Path template for uploaded files
+# Available variables: {platform}, {room}, {sender}, {date}, {year}, {month}, {day}, {filename}, {ext}
+path_template: "{platform}/{room}/{date}/{filename}"
+
+adapters:
+  matrix:
+    enabled: false
+    homeserver: "https://matrix.example.com"
+    user_id: "@bot:example.com"
+    access_token: "syt_..."
+    encryption: false  # Set to true for encrypted rooms (requires: uv sync --extra encryption)
+
+  telegram:
+    enabled: true
+    bot_token: "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"  # Get from @BotFather

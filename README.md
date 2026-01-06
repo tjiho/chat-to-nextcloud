@@ -1,0 +1,230 @@
+# Chat to Nextcloud
+
+Automatically upload files from messaging apps to Nextcloud. Supports **Telegram** and **Matrix**.
+
+## Features
+
+- Auto-uploads files shared in chats to Nextcloud
+- Supports Telegram and Matrix
+- Configurable folder structure with templates
+- Optional end-to-end encryption for Matrix
+- Dry-run mode for testing
+
+## Installation
+
+Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
+
+```bash
+git clone <repo-url>
+cd chat-to-nextcloud
+uv sync
+```
+
+### With encryption support
+
+For encrypted Matrix rooms:
+
+```bash
+uv sync --extra encryption
+```
+
+## Configuration
+
+1. Copy the example config:
+   ```bash
+   cp config.yaml.example config.yaml
+   ```
+
+2. Edit `config.yaml`:
+
+```yaml
+nextcloud:
+  url: "https://your-nextcloud.com"
+  username: "your-username"
+  password: "your-app-password"  # Generate in Nextcloud: Settings > Security > App passwords
+  base_path: "/Photos/ChatUploads"
+
+path_template: "{platform}/{room}/{date}/{filename}"
+
+adapters:
+  telegram:
+    enabled: true
+    bot_token: "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+
+  matrix:
+    enabled: false
+    homeserver: "https://matrix.org"
+    user_id: "@your-bot:matrix.org"
+    access_token: "syt_..."
+    encryption: false
+```
+
+### Path Template Variables
+
+| Variable | Example | Description |
+|----------|---------|-------------|
+| `{platform}` | `matrix` | Messaging platform name |
+| `{room}` | `Family Chat` | Room/channel name |
+| `{sender}` | `alice` | Who sent the file |
+| `{filename}` | `photo.jpg` | Original filename |
+| `{date}` | `2024-06-15` | Upload date |
+| `{year}` | `2024` | Year |
+| `{month}` | `06` | Month |
+| `{day}` | `15` | Day |
+
+### Telegram Setup
+
+1. Message [@BotFather](https://t.me/BotFather) on Telegram
+2. Send `/newbot` and follow the prompts
+3. Copy the bot token to your `config.yaml`
+4. Add the bot to your groups/channels
+5. **Important**: Disable privacy mode so the bot can see files:
+   - Send `/setprivacy` to @BotFather
+   - Select your bot
+   - Choose "Disable"
+
+### Getting a Matrix Access Token
+
+1. Log in to Element (or another Matrix client)
+2. Go to Settings > Help & About > Advanced
+3. Expand "Access Token" and copy it
+
+Or use the command line:
+```bash
+curl -X POST "https://matrix.org/_matrix/client/r0/login" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"m.login.password","user":"@bot:matrix.org","password":"your-password"}'
+```
+
+### Synapse Bot Registration (Self-hosted)
+
+If you run your own Synapse server, you can register the bot as an application service for better integration.
+
+1. Generate random tokens:
+   ```bash
+   # Generate as_token
+   openssl rand -hex 32
+   # Generate hs_token
+   openssl rand -hex 32
+   ```
+
+2. Copy and edit the registration file:
+   ```bash
+   cp bot-registration.yaml.example /etc/synapse/chat-to-nextcloud.yaml
+   ```
+
+3. Edit `/etc/synapse/chat-to-nextcloud.yaml`:
+   ```yaml
+   id: "chat-to-nextcloud"
+   url: null
+   as_token: "your_generated_as_token_here"
+   hs_token: "your_generated_hs_token_here"
+   sender_localpart: "nextcloud-bot"
+   namespaces:
+     users:
+       - exclusive: true
+         regex: "@nextcloud-bot:your-domain.com"
+     aliases: []
+     rooms: []
+   rate_limited: false
+   ```
+
+4. Add to Synapse's `homeserver.yaml`:
+   ```yaml
+   app_service_config_files:
+     - /etc/synapse/chat-to-nextcloud.yaml
+   ```
+
+5. Restart Synapse:
+   ```bash
+   systemctl restart synapse
+   ```
+
+6. Use the `as_token` as the `access_token` in your `config.yaml`:
+   ```yaml
+   adapters:
+     matrix:
+       enabled: true
+       homeserver: "https://matrix.your-domain.com"
+       user_id: "@nextcloud-bot:your-domain.com"
+       access_token: "your_generated_as_token_here"
+   ```
+
+## Usage
+
+### Run the bot
+
+```bash
+uv run python main.py
+```
+
+### Dry-run mode (no uploads)
+
+```bash
+uv run python main.py --dry-run
+```
+
+### Custom config file
+
+```bash
+uv run python main.py --config /path/to/config.yaml
+```
+
+### Stop the bot
+
+Press `Ctrl+C` for graceful shutdown.
+
+## How It Works
+
+1. Bot connects to enabled platforms (Telegram/Matrix)
+2. When someone shares a file, the bot:
+   - Downloads the file
+   - Resolves the path template
+   - Uploads to Nextcloud
+   - Cleans up the temp file
+
+## Running Tests
+
+```bash
+uv run pytest
+```
+
+## Project Structure
+
+```
+chat-to-nextcloud/
+├── main.py              # Entry point
+├── config.yaml          # Your configuration (gitignored)
+├── config.yaml.example  # Example configuration
+├── pyproject.toml       # Dependencies
+├── src/
+│   ├── config.py        # Config loader
+│   ├── uploader.py      # Nextcloud WebDAV client
+│   ├── path_resolver.py # Path template logic
+│   ├── file_processor.py# Coordinates downloads/uploads
+│   └── adapters/
+│       ├── base.py      # Adapter interface
+│       ├── telegram.py  # Telegram implementation
+│       └── matrix.py    # Matrix implementation
+└── tests/               # Unit tests
+```
+
+## Troubleshooting
+
+### "Could not verify Nextcloud connection"
+
+- Check your Nextcloud URL (include https://)
+- Use an app password, not your main password
+- Ensure the base_path exists or can be created
+
+### Bot doesn't join rooms
+
+- Verify the access token is correct
+- Check the bot's user_id matches the token
+- Ensure the homeserver URL is correct
+
+### Files not uploading
+
+- Run with `--dry-run` to see what would be uploaded
+- Check Nextcloud disk quota
+- Verify write permissions on base_path

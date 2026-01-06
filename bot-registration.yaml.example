@@ -1,0 +1,15 @@
+# Synapse Application Service Registration
+# Copy this file to your Synapse config directory and add it to app_service_config_files in homeserver.yaml
+
+id: "chat-to-nextcloud"
+url: null  # null = no HTTP listener needed, bot connects as a client
+as_token: "GENERATE_A_RANDOM_STRING_HERE_32_CHARS_MIN"
+hs_token: "GENERATE_ANOTHER_RANDOM_STRING_HERE_32_CHARS"
+sender_localpart: "nextcloud-bot"
+namespaces:
+  users:
+    - exclusive: true
+      regex: "@nextcloud-bot:your-domain.com"
+  aliases: []
+  rooms: []
+rate_limited: false

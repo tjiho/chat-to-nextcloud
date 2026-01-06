@@ -1,0 +1,28 @@
+[project]
+name = "chat-to-nextcloud"
+version = "0.1.0"
+description = "Bot to automatically upload files from messaging apps to Nextcloud"
+requires-python = ">=3.12"
+dependencies = [
+    "matrix-nio>=0.24.0",
+    "webdavclient3>=3.14.6",
+    "pyyaml>=6.0",
+    "aiofiles>=24.0.0",
+    "aiohttp>=3.9.0",
+    "python-telegram-bot>=21.0",
+]
+
+[project.optional-dependencies]
+encryption = [
+    "matrix-nio[e2e]>=0.24.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
