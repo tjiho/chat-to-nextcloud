@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80">
+  <!-- Chat bubble -->
+  <path d="M10 15 h45 a10 10 0 0 1 10 10 v20 a10 10 0 0 1 -10 10 h-25 l-10 12 v-12 h-10 a10 10 0 0 1 -10 -10 v-20 a10 10 0 0 1 10 -10z" fill="#0082c9"/>
+  <!-- File icon in bubble -->
+  <rect x="22" y="25" width="16" height="20" rx="2" fill="white"/>
+  <path d="M30 30 h6 M30 35 h6 M30 40 h4" stroke="#0082c9" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Arrow -->
+  <path d="M75 40 h35" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+  <path d="M105 32 l10 8 l-10 8" fill="none" stroke="#555" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Cloud (Nextcloud style) -->
+  <path d="M155 50 a18 18 0 0 1 -2 -36 a22 22 0 0 1 42 8 a14 14 0 0 1 -4 27 z" fill="#0082c9"/>
+  <!-- Upload arrow in cloud -->
+  <path d="M165 42 v12 M159 46 l6 -6 l6 6" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
